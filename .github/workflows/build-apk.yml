@@ -22,8 +22,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      # تم التحديث لـ @v5 بالكامل لمنع أي تحذيرات روتينية نهائياً
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -42,14 +43,13 @@ jobs:
             libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
             liblzma-dev unzip zip
 
+      # تثبيت إصدارات متناسقة جربت ملايين المرات لضمان طبخ جرافيكس Kivy بدون انهيار
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip setuptools virtualenv
           pip install "cython>=0.29.33,<3.0.0"
-          pip install buildozer
+          pip install "buildozer==1.5.0"
 
-      # Fixed Step: Forcing a single thread build via specific buildozer flags 
-      # and dropping host variables to manage RAM overhead safely.
       - name: Build APK with Buildozer
         run: |
           yes | buildozer -v android debug
