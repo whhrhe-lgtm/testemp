@@ -21,8 +21,7 @@ version = 0.1
 # (list) Application requirements
 # json, os, tempfile, sys, re, traceback, path, and datetime are standard built-in python libraries.
 # We explicitly list the external ones you imported:
-requirements = python3==3.11,kivy,pyjnius,arabic_reshaper,python-bidi
-
+requirements = python3, kivy, pyjnius, arabic_reshaper, python-bidi
 # (list) Permissions
 # Added internet access along with storage layout access for your BASE_DIR path
 android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
