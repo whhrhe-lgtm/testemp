@@ -32,72 +32,49 @@ steps:
   - name: Install system dependencies
     run: |
       sudo apt-get update
-
       sudo apt-get install -y \
-        git \
-        zip \
-        unzip \
-        openjdk-17-jdk \
-        python3-pip \
-        autoconf \
-        libtool \
-        pkg-config \
-        zlib1g-dev \
-        libncurses5-dev \
-        libncursesw5-dev \
-        libtinfo5 \
-        cmake \
-        libffi-dev \
-        libssl-dev \
-        automake \
-        libltdl-dev
+        git zip unzip openjdk-17-jdk \
+        python3-pip autoconf libtool pkg-config \
+        zlib1g-dev libncurses5-dev libncursesw5-dev \
+        libtinfo5 cmake libffi-dev libssl-dev \
+        automake libltdl-dev
 
   - name: Install Buildozer
     run: |
       python -m pip install --upgrade pip
-      python -m pip install buildozer setuptools cython==0.29.34
+      python -m pip install buildozer setuptools "Cython==0.29.34"
 
   - name: Configure Buildozer
     run: |
-      sed -i '/android.accept_sdk_license/d' buildozer.spec
+      sed -i '/^[[:space:]]*android.accept_sdk_license[[:space:]]*=/d' buildozer.spec
       sed -i '/^app/a android.accept_sdk_license = True' buildozer.spec
 
-      sed -i 's/^#\?p4a.branch = .*/p4a.branch = master/' buildozer.spec
-
-      if grep -q '^p4a.commit =' buildozer.spec; then
-        sed -i 's/^p4a.commit = .*/p4a.commit = c02cf78/' buildozer.spec
+      if grep -q '^p4a.branch[[:space:]]*=' buildozer.spec; then
+        sed -i 's/^p4a.branch[[:space:]]*=.*/p4a.branch = master/' buildozer.spec
       else
-        sed -i '/^p4a.branch = /a p4a.commit = c02cf78' buildozer.spec
+        sed -i '/^app/a p4a.branch = master' buildozer.spec
+      fi
+
+      if grep -q '^p4a.commit[[:space:]]*=' buildozer.spec; then
+        sed -i 's/^p4a.commit[[:space:]]*=.*/p4a.commit = c02cf78/' buildozer.spec
+      else
+        sed -i '/^p4a.branch[[:space:]]*=/a p4a.commit = c02cf78' buildozer.spec
       fi
 
       echo "===== BUILD CONFIGURATION ====="
-      grep -E \
-        'title|package.name|package.domain|requirements|android.api|android.minapi|android.ndk|android.archs|android.accept_sdk_license|p4a.branch|p4a.commit' \
-        buildozer.spec || true
-      echo "================================"
+      grep -E 'android.accept_sdk_license|p4a.branch|p4a.commit|requirements|android.api|android.minapi|android.ndk|android.archs' buildozer.spec || true
 
   - name: Clean Buildozer cache
-    run: |
-      rm -rf ~/.buildozer
+    run: rm -rf ~/.buildozer
 
   - name: Initialize python-for-android
-    run: |
-      buildozer android p4a -- --help
+    run: buildozer android p4a -- --help
 
-  - name: Verify python-for-android commit
+  - name: Verify python-for-android
     run: |
       cd .buildozer/android/platform/python-for-android
-
-      echo "===== P4A COMMIT ====="
       git rev-parse HEAD
       git log -1 --oneline
-      echo "======================"
-
-  - name: Verify Python recipe
-    run: |
-      grep -n "version = " \
-        .buildozer/android/platform/python-for-android/pythonforandroid/recipes/python3/__init__.py \
-        | head -n 5
 
   - name: Build APK
     run: |
@@ -107,15 +84,7 @@ steps:
   - name: Verify APK
     run: |
       find bin -maxdepth 1 -type f -name "*.apk" -print
-
-      APK_COUNT=$(find bin -maxdepth 1 -type f -name "*.apk" | wc -l)
-
-      if [ "$APK_COUNT" -eq 0 ]; then
-        echo "ERROR: APK was not created."
-        exit 1
-      fi
-
-      echo "APK successfully created."
+      test -n "$(find bin -maxdepth 1 -type f -name '*.apk' -print -quit)"
 
   - name: Show build log on failure
     if: failure()
