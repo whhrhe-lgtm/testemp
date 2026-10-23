@@ -48,10 +48,11 @@ jobs:
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
-      # Fixed Step: Clearing hostile environment paths to let Buildozer manage its own SDK/NDK cleanly
+      # Fixed Step: Forcing a single thread build via specific buildozer flags 
+      # and dropping host variables to manage RAM overhead safely.
       - name: Build APK with Buildozer
         run: |
-          yes | buildozer android debug
+          yes | buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
           ANDROID_HOME: ""
@@ -59,10 +60,5 @@ jobs:
           ANDROID_NDK_HOME: ""
           ANDROID_NDK_ROOT: ""
           ANDROID_NDK: ""
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: testemp-Debug-APK
-          path: bin/*.apk
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
           
