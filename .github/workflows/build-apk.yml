@@ -30,9 +30,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildozer-
 
+      # Fixed Step: Resolving the libgstreamer / libunwind dependency conflict
       - name: Install System Dependencies
         run: |
           sudo apt-get update
+          sudo apt-get install -y --fix-missing libunwind-dev
+          sudo apt-get install -f -y
           sudo apt-get install -y \
             build-essential git ffmpeg libsdl2-dev libsdl2-image-dev \
             libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev \
