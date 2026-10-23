@@ -1,105 +1,62 @@
-name: Build EmployeeManager APK
+name: Build Kivy APK
 
-"on":
-workflow_dispatch:
-
-permissions:
-contents: read
-
-env:
-PYTHONFORANDROID_PREREQUISITES_INSTALL_INTERACTIVE: "0"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-build:
-runs-on: ubuntu-22.04
-timeout-minutes: 360
+  build:
+    runs-on: ubuntu-22.04
 
-steps:
-  - name: Checkout project
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  - name: Setup Python 3.12
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.12"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-  - name: Setup Java 17
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: "17"
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v4
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
 
-  - name: Install system dependencies
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y \
-        git zip unzip openjdk-17-jdk \
-        python3-pip autoconf libtool pkg-config \
-        zlib1g-dev libncurses5-dev libncursesw5-dev \
-        libtinfo5 cmake libffi-dev libssl-dev \
-        automake libltdl-dev
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential git ffmpeg libsdl2-dev libsdl2-image-dev \
+            libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev \
+            libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base gstreamer1.0-plugins-good libsqlite3-dev \
+            sqlite3 bzip2 libbz2-dev libffi-dev libssl-dev openssl libgdbm-dev \
+            libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
+            liblzma-dev unzip zip openjdk-17-jdk
 
-  - name: Install Buildozer
-    run: |
-      python -m pip install --upgrade pip
-      python -m pip install buildozer setuptools "Cython==0.29.34"
+      - name: Install Buildozer and Cython
+        run: |
+          pip install --upgrade pip
+          pip install git+https://github.com
+          pip install "cython<3.0.0"
 
-  - name: Configure Buildozer
-    run: |
-      sed -i '/^[[:space:]]*android.accept_sdk_license[[:space:]]*=/d' buildozer.spec
-      sed -i '/^app/a android.accept_sdk_license = True' buildozer.spec
+      - name: Build APK with Buildozer
+        run: |
+          yes | buildozer android debug
+        env:
+          ACCEPT_SDK_LICENSE: "y"
 
-      if grep -q '^p4a.branch[[:space:]]*=' buildozer.spec; then
-        sed -i 's/^p4a.branch[[:space:]]*=.*/p4a.branch = master/' buildozer.spec
-      else
-        sed -i '/^app/a p4a.branch = master' buildozer.spec
-      fi
-
-      if grep -q '^p4a.commit[[:space:]]*=' buildozer.spec; then
-        sed -i 's/^p4a.commit[[:space:]]*=.*/p4a.commit = c02cf78/' buildozer.spec
-      else
-        sed -i '/^p4a.branch[[:space:]]*=/a p4a.commit = c02cf78' buildozer.spec
-      fi
-
-      echo "===== BUILD CONFIGURATION ====="
-      grep -E 'android.accept_sdk_license|p4a.branch|p4a.commit|requirements|android.api|android.minapi|android.ndk|android.archs' buildozer.spec || true
-
-  - name: Clean Buildozer cache
-    run: rm -rf ~/.buildozer
-
-  - name: Initialize python-for-android
-    run: buildozer android p4a -- --help
-
-  - name: Verify python-for-android
-    run: |
-      cd .buildozer/android/platform/python-for-android
-      git rev-parse HEAD
-      git log -1 --oneline
-
-  - name: Build APK
-    run: |
-      set -o pipefail
-      buildozer -v android debug 2>&1 | tee build.log
-
-  - name: Verify APK
-    run: |
-      find bin -maxdepth 1 -type f -name "*.apk" -print
-      test -n "$(find bin -maxdepth 1 -type f -name '*.apk' -print -quit)"
-
-  - name: Show build log on failure
-    if: failure()
-    run: |
-      if [ -f build.log ]; then
-        tail -n 300 build.log
-      fi
-
-  - name: Upload APK and build log
-    if: always()
-    uses: actions/upload-artifact@v4
-    with:
-      name: EmployeeManager-APK
-      path: |
-        bin/*.apk
-        build.log
-      if-no-files-found: warn
-      retention-days: 7
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: testemp-Debug-APK
+          path: bin/*.apk
+          
