@@ -42,15 +42,15 @@ jobs:
             libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
             liblzma-dev unzip zip
 
+      # Fixed Step: Explicitly targeting PyPI to remove the broken git clone link
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip setuptools virtualenv
           pip install "cython>=0.29.33,<3.0.0"
-          pip install git+https://github.com
+          pip install buildozer
 
       - name: Build APK with Buildozer
         run: |
-          buildozer android clean
           yes | buildozer android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
