@@ -17,19 +17,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # استخدام بايثون 3.10 وهو الإصدار الأكثر استقراراً وتوافقاً مع نسخ الكومبايلر الحالية لـ Kivy
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-          restore-keys: |
-            ${{ runner.os }}-buildozer-
 
       - name: Install System Dependencies
         run: |
@@ -45,17 +36,15 @@ jobs:
             libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
             liblzma-dev unzip zip openjdk-17-jdk
 
-      # تثبيت نسخ محددة ومجربة من Cython و Buildozer لمنع أخطاء التجميع (Compilation Errors)
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip
           pip install "cython<3.0.0"
           pip install buildozer setuptools
 
-      # تشغيل البناء مع إضافة أمر لتنظيف الكاش القديم قبل البدء للتأكد من عدم وجود تضارب
+      # We removed the caching step to guarantee Buildozer starts completely fresh
       - name: Build APK with Buildozer
         run: |
-          buildozer android clean
           yes | buildozer android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
