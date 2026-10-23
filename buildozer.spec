@@ -1,28 +1,20 @@
 [app]
+# (string) Title of your application
+title = testemp
 
-title = Employee Manager
-package.name = employeemanager
-package.domain = org.beaa
+# (string) Package name
+package.name = testemp
 
-source.dir = .
-source.include_exts = py,json,ttf,png,jpg,kv,atlas
+# (string) Package domain (needed for android packaging)
+package.domain = org.test
 
-version = 0.1
+# (list) Application requirements
+# Note: pyjnius handles the java imports, while standard libraries like json, os, sys, etc., are built into python3.
+requirements = python3, kivy, pyjnius, arabic_reshaper, python-bidi
 
-requirements = python3,kivy==2.3.1,pyjnius,arabic-reshaper,python-bidi
+# (list) Permissions 
+# Internet is required as requested, and storage is included because of your Path config.
+android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
-orientation = portrait
-fullscreen = 0
-
-android.api = 35
-android.minapi = 24
-android.ndk = 28c
-android.archs = arm64-v8a
-android.accept_sdk_license = True
-
-android.permissions = INTERNET
-
-[buildozer]
-
-log_level = 2
-warn_on_root = 0
+# (bool) Enable legacy storage access so it doesn't crash on Android 10+ when accessing /Download/mainemp
+android.manifest.application_arguments = android:requestLegacyExternalStorage="true"
