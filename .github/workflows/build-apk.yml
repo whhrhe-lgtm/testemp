@@ -48,12 +48,17 @@ jobs:
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
-      # Clean command is removed so it directly initiates the fresh build sequence
+      # Fixed Step: Clearing hostile environment paths to let Buildozer manage its own SDK/NDK cleanly
       - name: Build APK with Buildozer
         run: |
           yes | buildozer android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
+          ANDROID_HOME: ""
+          ANDROID_SDK_ROOT: ""
+          ANDROID_NDK_HOME: ""
+          ANDROID_NDK_ROOT: ""
+          ANDROID_NDK: ""
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
