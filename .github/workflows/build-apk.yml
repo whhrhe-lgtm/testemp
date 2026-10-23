@@ -17,6 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # تثبيت بايثون 3.11 ليتطابق مع متطلبات أندرويد
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -42,15 +43,16 @@ jobs:
             libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
             liblzma-dev unzip zip
 
-      # Fixed Step: Explicitly targeting PyPI to remove the broken git clone link
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip setuptools virtualenv
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
+      # تنظيف البيئة وبدء تجميع مطابق تماماً للإصدار 3.11
       - name: Build APK with Buildozer
         run: |
+          buildozer android clean
           yes | buildozer android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
