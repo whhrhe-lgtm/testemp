@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk \
+            python3.12 python3.12-venv python3-pip \
+            autoconf libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libtinfo6 \
+            cmake libffi-dev libssl-dev automake autopoint gettext
+
+      - name: Set up Python 3.12 environment
+        run: |
+          python3.12 -m venv "$RUNNER_TEMP/build-venv"
+          echo "$RUNNER_TEMP/build-venv/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/build-venv/bin/python" --version
+          "$RUNNER_TEMP/build-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/build-venv/bin/python" -m pip install \
+            buildozer setuptools "Cython==0.29.34"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Configure Buildozer
+        run: |
+          sed -i 's/^#\?p4a.branch = .*/p4a.branch = master/' buildozer.spec
+          grep -n 'p4a.branch' buildozer.spec || true
+
+      - name: Build APK
+        run: |
+          yes | buildozer -v android debug 2>&1 | tee build.log
+          test -n "$(find bin -maxdepth 1 -type f -name '*.apk' -print -quit)"
+
+      - name: Upload APK and build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: EmployeeManager-APK
+          path: |
+            bin/*.apk
+            build.log
+          if-no-files-found: warn
+          retention-days: 7
