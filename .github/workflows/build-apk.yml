@@ -48,10 +48,10 @@ jobs:
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
-      # تطبيق فكرتك: تحويل كل المخرجات لملف تكست، وإذا فشل يتم نقله لمجلد التحميل بنجاح
+      # قمنا بإرجاع الطباعة المباشرة على الشاشة لمنع خنق السيرفر مع ضمان استمرار الاستجابة
       - name: Build APK with Buildozer
         run: |
-          yes | buildozer -v android debug > buildozer_full_output.log 2>&1 || (mkdir -p bin && cp buildozer_full_output.log bin/build_error_log.txt && exit 1)
+          yes | buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
           ANDROID_HOME: ""
@@ -61,11 +61,11 @@ jobs:
           ANDROID_NDK: ""
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
 
-      # هذه الخطوة ستعمل دائماً (حتى لو فشل البناء) لكي ترفع لك ملف التكست أو الـ APK
-      - name: Upload APK or Error Log Artifact
-        if: always()
+      # سيرفع لك ملف الـ APK فوراً وبشكل آمن في قسم الـ Artifacts عند نجاح العملية
+      - name: Upload Finished APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: testemp-Build-Results
-          path: bin/
+          name: testemp-Successful-APK
+          path: bin/*.apk
           
