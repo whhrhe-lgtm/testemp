@@ -22,9 +22,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      # تم التحديث لـ @v5 بالكامل لمنع أي تحذيرات روتينية نهائياً
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -43,16 +42,16 @@ jobs:
             libncursesw5-dev libtinfo-dev libreadline-dev tk-dev uuid-dev \
             liblzma-dev unzip zip
 
-      # تثبيت إصدارات متناسقة جربت ملايين المرات لضمان طبخ جرافيكس Kivy بدون انهيار
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip setuptools virtualenv
           pip install "cython>=0.29.33,<3.0.0"
-          pip install "buildozer==1.5.0"
+          pip install buildozer
 
+      # تطبيق فكرتك: تحويل كل المخرجات لملف تكست، وإذا فشل يتم نقله لمجلد التحميل بنجاح
       - name: Build APK with Buildozer
         run: |
-          yes | buildozer -v android debug
+          yes | buildozer -v android debug > buildozer_full_output.log 2>&1 || (mkdir -p bin && cp buildozer_full_output.log bin/build_error_log.txt && exit 1)
         env:
           ACCEPT_SDK_LICENSE: "y"
           ANDROID_HOME: ""
@@ -61,4 +60,12 @@ jobs:
           ANDROID_NDK_ROOT: ""
           ANDROID_NDK: ""
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
+
+      # هذه الخطوة ستعمل دائماً (حتى لو فشل البناء) لكي ترفع لك ملف التكست أو الـ APK
+      - name: Upload APK or Error Log Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testemp-Build-Results
+          path: bin/
           
