@@ -20,8 +20,11 @@ version = 0.1
 
 # (list) Application requirements
 # json, os, tempfile, sys, re, traceback, path, and datetime are standard built-in python libraries.
-# We explicitly list the external ones you imported:
+# (list) Application requirements
 requirements = python3, kivy, pyjnius, arabic_reshaper, python-bidi
+# تفعيل السطر التالي (أو إضافته إذا لم يكن موجوداً) لإجبار المحرك على بناء نسخة مستقرة
+p4a.branch = release-2024.01.21
+
 # (list) Permissions
 # Added internet access along with storage layout access for your BASE_DIR path
 android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
