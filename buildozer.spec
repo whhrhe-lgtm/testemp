@@ -13,7 +13,8 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let's include all python and kv files)
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py, png, jpg, kv, atlas, json, ttf
+
 
 # (string) Application versioning
 version = 0.1
