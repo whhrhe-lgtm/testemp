@@ -48,8 +48,10 @@ jobs:
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
+      # قمنا بإضافة أمر مسح يدوي للمجلد التالف قبل بدء التجميع النظيف لمنع التوقف الصامت
       - name: Build APK with Buildozer
         run: |
+          rm -rf .buildozer
           yes | buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: "y"
@@ -66,3 +68,4 @@ jobs:
         with:
           name: testemp-Successful-APK
           path: bin/*.apk
+          
