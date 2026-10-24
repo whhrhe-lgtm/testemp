@@ -48,7 +48,6 @@ jobs:
           pip install "cython>=0.29.33,<3.0.0"
           pip install buildozer
 
-      # قمنا بإرجاع الطباعة المباشرة على الشاشة لمنع خنق السيرفر مع ضمان استمرار الاستجابة
       - name: Build APK with Buildozer
         run: |
           yes | buildozer -v android debug
@@ -61,11 +60,9 @@ jobs:
           ANDROID_NDK: ""
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
 
-      # سيرفع لك ملف الـ APK فوراً وبشكل آمن في قسم الـ Artifacts عند نجاح العملية
       - name: Upload Finished APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: testemp-Successful-APK
           path: bin/*.apk
-          
